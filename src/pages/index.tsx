@@ -61,7 +61,7 @@ export default function index() {
             </button>
           </div>
           <p>Microphone: {listening ? 'on' : 'off'}</p>
-          <div className="flex justify-center mt-5">
+          <div className="flex flex-col lg:flex-row justify-center mt-5">
             <button
               className="bg-blue-500 text-white hover:bg-yellow-600 py-3 w-full rounded-lg text-md font-semibold m-5 mt-10"
               onClick={() => SpeechRecognition.startListening({ language: "en-US" })}>Start</button>

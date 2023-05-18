@@ -26,7 +26,7 @@ export default function keren() {
     console.log(transcript);
 
     return (
-        <div className="text-black flex justify-center ">
+        <div className="text-black flex justify-center bg-black">
             <div className="my-12 w-3/5">
                 <form className="flex flex-col gap-5">
                     <div className="flex gap-3">
@@ -59,7 +59,7 @@ export default function keren() {
                     </button>
                 </div>
                 <p className="text-white">Microphone: {listening ? 'on' : 'off'}</p>
-                <div className="flex justify-center mt-5">
+                <div className="flex flex-col lg:flex-row justify-center mt-5">
                     <button
                         className="bg-blue-500 text-white hover:bg-yellow-600 py-3 w-full rounded-lg text-md font-semibold m-5 mt-10"
                         onClick={() => SpeechRecognition.startListening({ language: "en-US" })}>Start</button>
