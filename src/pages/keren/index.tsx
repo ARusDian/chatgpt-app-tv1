@@ -2,46 +2,35 @@
 import Link from "next/link";
 import { MouseEventHandler, useEffect, useState } from "react";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
-import { Configuration, OpenAIApi } from "openai";
-
-const configuration = new Configuration({
-    apiKey: "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",
-});
+import { ChatGPTUnofficialProxyAPI } from "chatgpt";
 
 export default function keren() {
-    const openai = new OpenAIApi(configuration);
-
+    const api = new ChatGPTUnofficialProxyAPI({
+        accessToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJhcnVzaGR5bmVAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsidXNlcl9pZCI6InVzZXItREdSTXhOTTdQMVFGd0I2RUJQTzRWSUdzIn0sImlzcyI6Imh0dHBzOi8vYXV0aDAub3BlbmFpLmNvbS8iLCJzdWIiOiJhdXRoMHw2NDY2OWFkMmU0MDc4ZGNhZGU4ZWIxZjMiLCJhdWQiOlsiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS92MSIsImh0dHBzOi8vb3BlbmFpLm9wZW5haS5hdXRoMGFwcC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjg0NDQ2NTYxLCJleHAiOjE2ODU2NTYxNjEsImF6cCI6IlRkSkljYmUxNldvVEh0Tjk1bnl5d2g1RTR5T282SXRHIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCBtb2RlbC5yZWFkIG1vZGVsLnJlcXVlc3Qgb3JnYW5pemF0aW9uLnJlYWQgb3JnYW5pemF0aW9uLndyaXRlIn0.PfErYhzKdCdD6I-hJOGXEqBAQQ7q3cooZtEyopcuXBRJOhwFs-Q5JBAcZ5Q1VggXLhO6TXMubMSHGrUAr64rbumjGhF8boTP6ZtgdmyFxcOZ0RWrQSa8aGKCGLW_GRvR7AV9fu2W9q-FAUPGbKIkk853tEROkHfoTM_JmcOAiT8588XTvNCzn0gy6j7AE0GiXNlxQ3CVPnVudkB7la7fim-UFDmlpj1viQhon825SJ-unLvYKzE5OAqCFspIz_UuIhKv426KWEerZQfk6jsSJDE8XOMEbNA8CrVco9rBnAcGKADcdH_d_Fn1Bm4KyZE_s3sjbK6t7y2vCh6UccJQSQ",
+    })
     const [formState, setFormState] = useState({
         prompt: "",
         answer: "",
         options: [],
     });
 
-    const [chatState, setChatState] = useState({
-        messages: [],
-    });
 
     const submitHandler = async () => {
-        const response = await openai.createChatCompletion({
-            model: 'gpt-3.5-turbo',
-            messages: chatState.messages,
-        });
-
-        setChatState({
-            // @ts-ignore
-            messages: [...chatState.messages, { role: "user", content: formState.prompt }, { role: "assitant", content: response.data.choices[0].text }],
+        const response = await api.sendMessage(formState.prompt).then((res) => {
+            console.log(res);
+            setFormState({
+                ...formState,
+                answer: res.text
+            });
+        }).catch(err => {
+            console.log({ err })
         });
 
         resetTranscript();
     };
 
-    useEffect(() => {
-        setFormState({ ...formState, answer: chatState.messages[chatState.messages.length - 1] });
-    }, [chatState]);
-  
-
     const {
-        transcript,
+        transcript, 
         listening,
         resetTranscript,
         browserSupportsSpeechRecognition

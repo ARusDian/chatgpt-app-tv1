@@ -34,13 +34,18 @@ export default function index() {
     const response = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: chatState.messages,
-    });
+    }).then((res) => {
+      console.log(res.data.choices[0].message?.content);
+      setChatState({
+        // @ts-ignore
+        messages: [...chatState.messages, { role: "user", content: formState.prompt }, { role: "assitant", content: response.data.choices[0].text }],
+      });
 
-    setChatState({
-      // @ts-ignore
-      messages: [...chatState.messages, { role: "user", content: formState.prompt }, { role: "assitant", content: response.data.choices[0].text }],
-    });
+    }).catch(err => {
+      console.log({ err })
+    });;
 
+    
     resetTranscript();
   };
 
