@@ -1,15 +1,17 @@
 "use client"
-import { MouseEventHandler, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import Layout from "./keren/layout";
 import Link from "next/link";
+import { Configuration, OpenAIApi } from "openai";
+
+const configuration = new Configuration({
+  apiKey: "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",
+});
 
 export default function index() {
-  const [formState, setFormState] = useState({
-    prompt: "",
-    answer: "",
-    options: [],
-  });
+
+  const openai = new OpenAIApi(configuration);
 
   const {
     transcript,
@@ -18,13 +20,39 @@ export default function index() {
     browserSupportsSpeechRecognition
   } = useSpeechRecognition();
 
+  const [formState, setFormState] = useState({
+    prompt: "",
+    answer: "",
+    options: [],
+  });
+
+  const [chatState, setChatState] = useState({
+    messages: [],
+  });
+
+  const submitHandler = async () => {
+    const response = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: chatState.messages,
+    });
+
+    setChatState({
+      // @ts-ignore
+      messages: [...chatState.messages, { role: "user", content: formState.prompt }, { role: "assitant", content: response.data.choices[0].text }],
+    });
+
+    resetTranscript();
+  };
+
+  useEffect(() => {
+    setFormState({ ...formState, answer: chatState.messages[chatState.messages.length - 1] });
+  }, [chatState]);
+
   useEffect(() => {
     if (transcript) {
       setFormState({ ...formState, prompt: transcript });
     }
   }, [transcript]);
-
-  console.log(transcript);
 
   return (
     <Layout>
@@ -54,12 +82,13 @@ export default function index() {
               />
             </div>
           </form>
-          <div className="flex justify-center mt-5">
-            
-            <button className="bg-yellow-500 text-white hover:bg-yellow-600 py-3 px-5 rounded-lg text-md font-semibold m-5 mt-10 w-1/2">
-              Submit
-            </button>
-          </div>
+            <div className="flex justify-center mt-5">
+              <button
+                onClick={submitHandler}
+                className="bg-yellow-500 text-white hover:bg-yellow-600 py-3 px-5 rounded-lg text-md font-semibold m-5 mt-10 w-1/2">
+                Submit
+              </button>
+            </div>
           <p>Microphone: {listening ? 'on' : 'off'}</p>
           <div className="flex flex-col lg:flex-row justify-center mt-5">
             <button
