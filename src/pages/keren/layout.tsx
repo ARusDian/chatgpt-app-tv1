@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 export default function Layout({
     children,
 }: {
@@ -6,7 +8,9 @@ export default function Layout({
     return (
         <div className="min-h-screen bg-white flex flex-col">
             <div className="flex w-full bg-blue-300 p-5 pl-20">
-                Navbar
+                <Link href={"/keren"}>
+                    Keren
+                </Link>
             </div>
             {children}
             <div className="w-full bg-sky-600">
