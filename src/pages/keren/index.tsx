@@ -17,6 +17,19 @@ export default function keren() {
 
     const [isAsking, setIsAsking] = useState(false);
 
+    const {
+        transcript,
+        listening,
+        resetTranscript,
+        browserSupportsSpeechRecognition
+    } = useSpeechRecognition();
+
+    useEffect(() => {
+        if (transcript) {
+            setFormState({ ...formState, prompt: transcript });
+        }
+    }, [transcript]);
+
     const submitHandler = async () => {
         setIsAsking(true);
         const response = await api.sendMessage(formState.prompt).then((res) => {
@@ -33,18 +46,10 @@ export default function keren() {
         resetTranscript();
     };
 
-    const {
-        transcript,
-        listening,
-        resetTranscript,
-        browserSupportsSpeechRecognition
-    } = useSpeechRecognition();
-
-    useEffect(() => {
-        if (transcript) {
-            setFormState({ ...formState, prompt: transcript });
-        }
-    }, [transcript]);
+    const resetHandler = () => {
+        resetTranscript();
+        setFormState({ ...formState, prompt: "" });
+    };
 
     return (
         <div className="text-black flex justify-center bg-black">
@@ -94,7 +99,7 @@ export default function keren() {
                         onClick={SpeechRecognition.stopListening}>Stop</button>
                     <button
                         className="bg-yellow-500 text-white hover:bg-yellow-600 py-3 w-full rounded-lg text-md font-semibold m-5 mt-10"
-                        onClick={resetTranscript}>Reset</button>
+                        onClick={resetHandler}>Reset</button>
                     <p>{transcript}</p>
                 </div>
                 <div>
