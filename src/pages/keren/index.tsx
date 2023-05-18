@@ -48,7 +48,11 @@ export default function keren() {
 
     const resetHandler = () => {
         resetTranscript();
-        setFormState({ ...formState, prompt: "" });
+        setFormState({
+            ...formState,
+            prompt: "",
+            answer: "Ask me anything!",
+        });
     };
 
     return (
@@ -78,7 +82,7 @@ export default function keren() {
                         </div>
                     ) : (
                         <div className="text-center text-white text-lg">
-                                Loading....
+                            Loading....
                         </div>
                     )}
                 </form>
