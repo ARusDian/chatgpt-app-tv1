@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Configuration, OpenAIApi } from "openai";
 
 const configuration = new Configuration({
-  apiKey: "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",
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
 });
 
 export default function index() {
