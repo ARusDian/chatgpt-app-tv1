@@ -28,7 +28,6 @@ Sertakan jawaban yang paling benar dengan tingkat kepercayaan 100% untuk setiap 
 
     useEffect(() => {
         setFormState({ ...formState, finalPrompt: formState.basicPrompt.replace("{self.case}", formState.case).replace("{self.type}", formState.type).replace("{self.topic}", formState.topic).replace("{self.num_questions}", formState.num_questions.toString()).replace("{self.num_possible_answers}", formState.num_possible_answers.toString()) });
-        console.log(formState.finalPrompt);
     }, [formState.case, formState.type, formState.topic, formState.num_questions, formState.num_possible_answers]);
 
     const submitHandler = async () => {
