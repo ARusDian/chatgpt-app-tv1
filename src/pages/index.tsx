@@ -31,6 +31,12 @@ export default function index() {
   });
 
   const submitHandler = async () => {
+    console.log(formState.prompt);
+    setChatState({
+       // @ts-ignore
+      messages: [...chatState.messages, { role: "user", content: formState.prompt }],
+    });
+    console.log(chatState.messages);
     const response = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages: chatState.messages,
@@ -38,7 +44,7 @@ export default function index() {
       console.log(res.data.choices[0].message?.content);
       setChatState({
         // @ts-ignore
-        messages: [...chatState.messages, { role: "user", content: formState.prompt }, { role: "assitant", content: response.data.choices[0].text }],
+        messages: [...chatState.messages, { role: "assitant", content: response.data.choices[0].text }],
       });
 
     }).catch(err => {
