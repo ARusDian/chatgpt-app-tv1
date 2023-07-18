@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dalenguyen/openai": "^0.11.3",
     "@dqbd/tiktoken": "^1.0.7",
+    "@google-cloud/text-to-speech": "^4.2.3",
     "@types/node": "20.2.1",
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
@@ -17,6 +19,7 @@
     "chatgpt": "^5.2.5",
     "next": "13.4.2",
     "openai": "^3.2.1",
+    "openai-api-node": "^1.0.0",
     "openai-token": "^1.0.0",
     "postcss": "8.4.23",
     "react": "18.2.0",

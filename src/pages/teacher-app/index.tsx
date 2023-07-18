@@ -53,7 +53,7 @@ Sertakan jawaban yang paling benar dengan tingkat kepercayaan 100% untuk setiap 
     };
 
     return (
-        <div className="text-black flex justify-center bg-black">
+        <div className="text-black flex justify-center bg-white">
             <div className="my-12 w-3/5">
                 <form className="flex flex-col gap-5">
                     <div className="grid grid-cols-5 gap-3">
