@@ -68,7 +68,7 @@ export default function full() {
                 <link rel="icon" href="/Icon-ITK.png" />
             </Head>
             <div className="my-auto w-full flex flex-col gap-5">
-                <form className="w-3/4 mx-auto border p-5 shadow-md rounded-xl">
+                <form className="w-3/4 mx-auto border p-5 shadow-md rounded-xl my-3">
                     <div className="flex flex-col gap-5 text-black">
                         <div className="flex justify-center">
                             <Image
