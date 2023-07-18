@@ -52,17 +52,24 @@ export default function full() {
     const [soal, setSoal] = useState<Soal[]>([]);
     const [status, setStatus] = useState<string>("");
     const [form, setForm] = useState({
+        grade : "",
+        subject: "",
         topic: "",
         num_questions: 10,
         num_possible_answers: 5,
     });
 
-    const prompt = `Buatlah kuis dengan pilihan ganda pada topik {self.topic} yang terdiri dari {self.num_questions} pertanyaan. Setiap pertanyaan memiliki {self.num_possible_answers} pilihan jawaban. Formatnya seperti json dalam 1 baris panjang dan dibungkus array dengan key soal,pilihan,jawaban agar mudah di parse. Contoh formatnya seperti ini:
+    const prompt = `Buatlah kuis dengan pilihan ganda pada mata pelajaran {self.subject} topik {self.topic} untung jenjang {self.grade} yang terdiri dari {self.num_questions} pertanyaan. Setiap pertanyaan memiliki {self.num_possible_answers} pilihan jawaban. Formatnya seperti json dalam 1 baris panjang dan dibungkus array dengan key soal,pilihan,jawaban agar mudah di parse. Contoh formatnya seperti ini:
     [{"soal":"soal","pilihan":[{"value":"a","content":"pilihan1"},{"value":"b","content":"pilihan2"}],"jawaban":{"value":"","content":"jawaban1"}},{"soal":"soal","pilihan":[{"value":"a","content":"pilihan1"},{"value":"b","content":"pilihan2"}],"jawaban":{"value":"","content":"jawaban2"}}]`;
 
     const submitHandler = async () => {
         setStatus("loading");
-        const formattedPrompt = prompt.replace("{self.topic}", form.topic).replace("{self.num_questions}", form.num_questions.toString()).replace("{self.num_possible_answers}", form.num_possible_answers.toString());
+        const formattedPrompt = prompt
+            .replace("{self.subject}", form.subject)
+            .replace("{self.topic}", form.topic)
+            .replace("{self.grade}", form.grade)
+            .replace("{self.num_questions}", form.num_questions.toString())
+            .replace("{self.num_possible_answers}", form.num_possible_answers.toString());
         const result = await api.createCompletion({
             model: 'text-davinci-003',
             prompt: formattedPrompt,
@@ -99,6 +106,39 @@ export default function full() {
                         </div>
                         <div className="text-red-600 mx-auto text-lg">
                             ⚠️Perhatian! Terlalu banyak pertanyaan akan menyebabkan komputasi yang tinggi dan Berpotensi Error!⚠️
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="grade" className="text-black">Jenjang</label>
+                            <select
+                                className="mt-1 block w-full p-2 resize-y col-span-4 h-10 border-2 rounded-lg"
+                                name="grade"
+                                id="grade"
+                                value={form.grade}
+                                onChange={(e) => setForm({ ...form, grade: e.target.value })}
+                            >
+                                <option value="1 SD">1 SD</option>
+                                <option value="2 SD">2 SD</option>
+                                <option value="3 SD">3 SD</option>
+                                <option value="4 SD">4 SD</option>
+                                <option value="5 SD">5 SD</option>
+                                <option value="6 SD">6 SD</option>
+                                <option value="1 SMP">1 SMP</option>
+                                <option value="2 SMP">2 SMP</option>
+                                <option value="3 SMP">3 SMP</option>
+                                <option value="1 SMA/SMK">1 SMA/SMK</option>
+                                <option value="2 SMA/SMK">2 SMA/SMK</option>
+                                <option value="3 SMA/SMK">3 SMA/SMK</option>
+                            </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="subject" className="text-black">Mata Pelajaran</label>
+                            <input
+                                className="mt-1 block w-full p-2 resize-y col-span-4 h-10 border-2 rounded-lg"
+                                name="subject"
+                                id="subject"
+                                value={form.subject}
+                                onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                            />
                         </div>
                         <div className="flex flex-col gap-1">
                             <label htmlFor="topic" className="text-black">Topik</label>
