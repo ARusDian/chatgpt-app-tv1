@@ -2,6 +2,7 @@
 
 import Head from "next/head";
 import { use, useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 class Soal {
     public pertanyaan: string = "";
@@ -35,6 +36,9 @@ export default function pengerjaan() {
 
     const [answers, setAnswers] = useState<any[]>([]);
 
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
+
+    const router = useRouter();
     useEffect(() => {
         const soalList: Soal[] = [];
         const rawSoal = JSON.parse(localStorage.getItem("soal") || "[]");
@@ -64,52 +68,111 @@ export default function pengerjaan() {
                                 PENGERJAAN SOAL
                             </div>
                             <form>
-                            {questions.map((question, i) => {
-                                return (
-                                    <div key={i} className="flex flex-col mt-3">
-                                        <div>
-                                            <span className="font-semibold text-lg">{i + 1}.</span> {question.pertanyaan}
+                                {questions.map((question, i) => {
+                                    return (
+                                        <div key={i} className="flex flex-col mt-3">
+                                            <div>
+                                                <span className="font-semibold text-lg">{i + 1}.</span> {question.pertanyaan}
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                {question.pilihan.map((item, j) => {
+                                                    return (
+                                                        <div key={j} className="flex gap-3">
+                                                            <input type="radio" name={question.pertanyaan} value={item.value}
+                                                                onChange={(e) => {
+                                                                    const temp = answers;
+                                                                    temp[i] = e.target.value;
+                                                                    setAnswers(temp);
+                                                                }}
+                                                            />
+                                                            <label htmlFor={item.value}>{item.value}. {item.content}</label>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col gap-1">
-                                            {question.pilihan.map((item, j) => {
-                                                return (
-                                                    <div key={j} className="flex gap-3">
-                                                        <input type="radio" name={question.pertanyaan} value={item.value}
-                                                            onChange={(e) => {
-                                                                const temp = answers;
-                                                                temp[i] = e.target.value;
-                                                                setAnswers(temp);
-                                                            }}
-                                                        />
-                                                        <label htmlFor={item.value}>{item.value}. {item.content}</label>
-                                                    </div>
-                                                )
-                                            })}     
-                                        </div>
-                                    </div>
-                                )
-                            })}
+                                    )
+                                })}
                                 <div className="flex justify-center">
                                     <button
                                         className="bg-yellow-500 text-white hover:bg-yellow-600 py-3 px-5 rounded-lg text-md font-semibold m-5 mt-10 w-1/2"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             console.log(answers);
-                                            if(answers.length === questions.length) {
-                                                let score = 0;
-                                                questions.forEach((question, i) => {
-                                                    if(question.jawaban.value === answers[i]) {
-                                                        score++;
-                                                    }
-                                                });
-                                                alert(`Skor anda adalah ${score*10}`);
-                                            }
+                                            setModalOpen(true);
                                         }}
                                     >
                                         Submit
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                        <div className={`fixed z-10 inset-0 overflow-y-auto ${modalOpen ? "block" : "hidden"}`}>
+                            <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+                                    <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+                                </div>
+                                <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
+                                    <div className="bg-white px-5 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                        <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex flex-col gap-3">
+                                            <h3 className="text-lg leading-6 font-medium text-gray-900">
+                                                Kunci Jawaban
+                                            </h3>
+                                            <div className="mt-2 border-b pb-5">
+                                                <p className="text-lg text-gray-500 flex flex-col gap-4">
+                                                    {questions.map((item, i) => {
+                                                        const userAnswer = item.pilihan.filter((iter => {
+                                                            return iter.value === answers[i];
+                                                        }));
+                                                        return (
+                                                            <div key={i} className={`${userAnswer[0]?.value === item.jawaban.value ? "bg-green-100" : "bg-red-100"} p-2 rounded-md`}>
+                                                                <p>{i + 1}. {item.pertanyaan}</p>
+                                                                <p className="">Jawaban Benar <span className="font-semibold">{item.jawaban.value}. {item.jawaban.content} </span></p>
+                                                                <p className="text-gray-500">
+                                                                    Jawaban Anda: <span className="font-semibold">{userAnswer[0] ? `${userAnswer[0].value}. ${userAnswer[0].content}` : "Belum Menjawab"}</span>
+                                                                </p>
+                                                                <p className={`${userAnswer[0]?.value === item.jawaban.value ? "text-green-600" : "text-red-600"}`}>
+                                                                    {userAnswer[0]?.value === item.jawaban.value ? "Benar" : "Salah" }
+                                                                </p>
+                                                            </div>
+                                                        )
+                                                    }
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <div className="mt-2">
+                                                <p className="text-md text-gray-500">
+                                                    Skor Anda {answers.filter((item, i) => {
+                                                        return questions[i].jawaban.value === item;
+                                                    }).length} / {answers.length}
+                                                </p>
+                                            </div>
+
+                                            <div className="flex justify-around text-lg">
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex justify-center px-4 py-2 font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                                                    onClick={() => {
+                                                        setModalOpen(false);
+                                                    }}
+                                                >
+                                                    Tutup
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex justify-center px-4 py-2 font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                                                    onClick={() => {
+                                                        router.push('/teacher-app/full')
+                                                    }}
+                                                >
+                                                    Kembali
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
