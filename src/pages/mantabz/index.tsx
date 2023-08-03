@@ -1,13 +1,14 @@
 "use client"
 import Link from "next/link";
-import { MouseEventHandler, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import OpenAI from 'openai';
-import { IncomingMessage } from "http";
 import { CreateChatCompletionRequestMessage } from "openai/resources/chat";
 
 
 export default function keren() {
+
+    const separator = ["\n", ".", "?", "!", ". ", "? ", "! "]
 
     const openai = new OpenAI({
         apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
@@ -45,13 +46,28 @@ export default function keren() {
                 stream: true,
             });
             let tempData = "";
+            let tempLine = "";
+            const lineText = [];
             for await (const part of stream) {
-                console.log(part.choices[0]?.delta.content);
+                // console.log(part.choices[0]?.delta.content);
                 tempData += part.choices[0]?.delta.content ?? "";
+                tempLine += part.choices[0]?.delta.content ?? "";
+                if (separator.some((val) => tempLine.includes(val))) {
+                    const tempSplit = tempLine.split(".");
+                    if (tempSplit.length > 1) {
+                        tempSplit[0] += ".";
+                    }
+                    lineText.push(tempSplit[0].trimStart());
+                    tempLine = tempSplit[1] ?? "";
+                    tempData += "\n";
+                }
+                console.log(tempLine);
                 setFormState({ ...formState, answer: tempData });
             }
+            // console.log(tempLine);
 
-            console.log(tempData)
+            // console.log(tempData)
+            console.log(lineText);
             chatLogs.push({ role: "assistant", content: tempData });
 
             
@@ -110,6 +126,11 @@ export default function keren() {
                         Submit
                     </button>
                 </div>
+                <audio
+                    src="https://assets.coderrocketfuel.com/pomodoro-times-up.mp3"
+                    id="audio"
+                    
+                />
                 <p className="text-white">Microphone: {listening ? 'on' : 'off'}</p>
                 <div className="flex flex-col lg:flex-row justify-center mt-5">
                     <button
