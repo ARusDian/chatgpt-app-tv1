@@ -3,15 +3,15 @@ import { FormEvent, useEffect, useState } from "react";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import Layout from "./keren/layout";
 import Link from "next/link";
-import { Configuration, OpenAIApi } from "openai";
+// import { Configuration, OpenAIApi } from "openai";
 
-const configuration = new Configuration({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-});
+// const configuration = new Configuration({
+//   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+// });
 
 export default function index() {
 
-  const openai = new OpenAIApi(configuration);
+  // const openai = new OpenAIApi(configuration);
 
   const {
     transcript,
@@ -31,25 +31,25 @@ export default function index() {
   });
 
   const submitHandler = async () => {
-    console.log(formState.prompt);
-    setChatState({
-       // @ts-ignore
-      messages: [...chatState.messages, { role: "user", content: formState.prompt }],
-    });
-    console.log(chatState.messages);
-    const response = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages: chatState.messages,
-    }).then((res) => {
-      console.log(res.data.choices[0].message?.content);
-      setChatState({
-        // @ts-ignore
-        messages: [...chatState.messages, { role: "assitant", content: response.data.choices[0].text }],
-      });
+    // console.log(formState.prompt);
+    // setChatState({
+    //    // @ts-ignore
+    //   messages: [...chatState.messages, { role: "user", content: formState.prompt }],
+    // });
+    // console.log(chatState.messages);
+    // const response = await openai.createChatCompletion({
+    //   model: 'gpt-3.5-turbo',
+    //   messages: chatState.messages,
+    // }).then((res) => {
+    //   console.log(res.data.choices[0].message?.content);
+    //   setChatState({
+    //     // @ts-ignore
+    //     messages: [...chatState.messages, { role: "assitant", content: response.data.choices[0].text }],
+    //   });
 
-    }).catch(err => {
-      console.log({ err })
-    });;
+    // }).catch(err => {
+    //   console.log({ err })
+    // });;
 
     
     resetTranscript();
