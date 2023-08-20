@@ -1,9 +1,10 @@
 "use client"
 import Link from "next/link";
-import {  useEffect, useState } from "react";
+import {  use, useEffect, useState } from "react";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import OpenAI from 'openai';
 import { CreateChatCompletionRequestMessage } from "openai/resources/chat";
+import useSWR from 'swr'
 
 
 export default function keren() {
@@ -14,10 +15,14 @@ export default function keren() {
         apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
     });
     const [formState, setFormState] = useState({
-        prompt: "",
+        prompt: "kucing adalah",
         answer: "Ask me anything!",
         options: [],
     });
+
+    const [queueText, setQueueText] = useState<string[]>([]);
+
+    const [queueAudio, setQueueAudio] = useState([]);
 
     const [isAsking, setIsAsking] = useState(false);
 
@@ -58,16 +63,18 @@ export default function keren() {
                         tempSplit[0] += ".";
                     }
                     lineText.push(tempSplit[0].trimStart());
+                    setQueueText([...queueText, tempSplit[0].trimStart()]);
                     tempLine = tempSplit[1] ?? "";
                     tempData += "\n";
+                    // console.log(tempSplit[0].trimStart());
                 }
-                console.log(tempLine);
-                setFormState({ ...formState, answer: tempData });
+                // console.log(tempLine);
+                setFormState({ ...formState, answer: tempData });                
             }
             // console.log(tempLine);
 
             // console.log(tempData)
-            console.log(lineText);
+            // console.log(lineText);
             chatLogs.push({ role: "assistant", content: tempData });
 
             
@@ -75,9 +82,44 @@ export default function keren() {
             console.log(err);
         }
 
-
     };
+
+    console.log(queueText,queueAudio);
     
+    useEffect(() => {
+        if (queueText.length > 0) {
+            // console.log("requesting");
+            fetch("api/synthesize", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    text: queueText[0],
+                }),
+            }).then(
+                (res) => res.json()
+            ).then((data) => {
+                // console.log(data);
+                // console.log(data);
+                // setQueueText(queueText.slice(1));
+                setQueueAudio([...queueAudio, data]);
+                // if (queueText.length === 0) {
+                //     setIsAsking(false);
+                // }
+            });
+        }
+    }, [JSON.stringify(queueText)]);
+
+    useEffect(() => {
+        if (queueAudio.length > 0) {
+            // console.log("requesting");
+            const audio = document.getElementById("audio") as HTMLAudioElement;
+            const blob = new Blob([queueAudio[0]], { type: "audio/wav" });
+            audio.src = URL.createObjectURL(blob);
+            setQueueAudio(queueAudio.slice(1));
+        }
+    }, [JSON.stringify(queueAudio)]);
 
     const resetHandler = () => {
         resetTranscript();
@@ -160,6 +202,12 @@ export default function keren() {
                     >
                         Awal
                     </Link>
+                </div>
+                <div>
+                    <audio
+                        id="audio"
+                        controls
+                    />
                 </div>
             </div>
         </div>
