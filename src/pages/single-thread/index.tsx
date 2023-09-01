@@ -4,8 +4,6 @@ import { use, useEffect, useState } from "react";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import OpenAI from 'openai';
 import { CreateChatCompletionRequestMessage } from "openai/resources/chat";
-import { audioBufferToWav } from "@/utils/audioBufferToWav";
-
 
 export default function keren() {
     const openai = new OpenAI({
@@ -64,7 +62,7 @@ export default function keren() {
                 }),
             }).then((res) => res.json()).then(
                 (data) => {
-                    const audio = document.getElementById("MyAudio");
+                    const audio = document.getElementById("MyAudio") as HTMLAudioElement;
                     audio?.removeAttribute('src')
                     audio.src = data.src;
                     audio.play();
