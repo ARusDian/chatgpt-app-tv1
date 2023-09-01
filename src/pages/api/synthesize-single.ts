@@ -27,11 +27,12 @@ export default function handler(
             };
             const [response] = await client.synthesizeSpeech(request);
             const writeFile = util.promisify(fs.writeFile);
-            await writeFile('public/audio/outputFile.mp3', response.audioContent, 'binary');
+            const currentDate = new Date().getTime()
+            await writeFile('public/audio/outputSynthesizeFile/outputFile'+currentDate+'.mp3', response.audioContent, 'binary');
             console.log(`Audio content written to file: ${'public/audio/outputFile'}`);
             res.status(200).json({
                 ...response,
-                src: 'audio/outputFile.mp3'
+                src: 'audio/outputSynthesizeFile/outputFile'+currentDate+'.mp3'
             })
         });
     }

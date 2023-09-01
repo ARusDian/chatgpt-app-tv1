@@ -1,18 +1,17 @@
 "use client"
 import Link from "next/link";
-import {  use, useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import OpenAI from 'openai';
 import { CreateChatCompletionRequestMessage } from "openai/resources/chat";
-import useSWR from 'swr'
+import { audioBufferToWav } from "@/utils/audioBufferToWav";
 
 
 export default function keren() {
-
-    const separator = ["\n", ".", "?", "!", ". ", "? ", "! "]
-
     const openai = new OpenAI({
-        apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
+        apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+        // @ts-ignorex
+        dangerouslyAllowBrowser: true
     });
     const [formState, setFormState] = useState({
         prompt: "kucing adalah",
@@ -26,7 +25,7 @@ export default function keren() {
 
     const [isAsking, setIsAsking] = useState(false);
 
-    const chatLogs: CreateChatCompletionRequestMessage[] = [] 
+    const chatLogs: CreateChatCompletionRequestMessage[] = []
 
     const {
         transcript,
@@ -44,82 +43,41 @@ export default function keren() {
     const submitHandler = async () => {
         try {
             chatLogs.push({ role: "user", content: formState.prompt });
-
-            const stream = await openai.chat.completions.create({
-                model: 'gpt-3.5-turbo-16k-0613',
+            const completion = await openai.chat.completions.create({
                 messages: chatLogs,
-                stream: true,
+                model: 'gpt-3.5-turbo',
             });
-            let tempData = "";
-            let tempLine = "";
-            const lineText = [];
-            for await (const part of stream) {
-                // console.log(part.choices[0]?.delta.content);
-                tempData += part.choices[0]?.delta.content ?? "";
-                tempLine += part.choices[0]?.delta.content ?? "";
-                if (separator.some((val) => tempLine.includes(val))) {
-                    const tempSplit = tempLine.split(".");
-                    if (tempSplit.length > 1) {
-                        tempSplit[0] += ".";
-                    }
-                    lineText.push(tempSplit[0].trimStart());
-                    setQueueText([...queueText, tempSplit[0].trimStart()]);
-                    tempLine = tempSplit[1] ?? "";
-                    tempData += "\n";
-                    // console.log(tempSplit[0].trimStart());
-                }
-                // console.log(tempLine);
-                setFormState({ ...formState, answer: tempData });                
-            }
-            // console.log(tempLine);
 
-            // console.log(tempData)
-            // console.log(lineText);
-            chatLogs.push({ role: "assistant", content: tempData });
+            console.log(completion.choices);
+            setFormState({
+                ...formState,
+                answer: completion.choices[0].message.content ?? ""
+            })
 
-            
-        } catch (err) {
-            console.log(err);
-        }
-
-    };
-
-    // console.log(queueAudio);
-    
-    useEffect(() => {
-        if (queueText.length > 0) {
-            // console.log("requesting");
-            fetch("api/synthesize", {
+            fetch("api/synthesize-single", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    text: queueText[0],
+                    text: completion.choices[0].message.content,
                 }),
-            }).then(
-                (res) => res.json()
-            ).then((data) => {
-                // console.log(data);
-                setQueueText(queueText.slice(1));
-                setQueueAudio([...queueAudio, data]);
-                // if (queueText.length === 0) {
-                //     setIsAsking(false);
-                // }
-            });
-        }
-    }, [JSON.stringify(queueText)]);
+            }).then((res) => res.json()).then(
+                (data) => {
+                    const audio = document.getElementById("MyAudio");
+                    audio?.removeAttribute('src')
+                    audio.src = data.src;
+                    audio.play();
+                }
+            )
 
-    useEffect(() => {
-        if (queueAudio.length > 0) {
-            // console.log("requesting");
-            const audio = document.getElementById("audio") as HTMLAudioElement;
-            const blob = new Blob([queueAudio[0].audioContent.data], { type: "audio/mp3" });
-            audio.src = URL.createObjectURL(blob);
-            setQueueAudio(queueAudio.slice(1));
-            console.log(queueAudio, queueText);
+
+
+        } catch (err) {
+            console.log(err);
         }
-    }, [JSON.stringify(queueAudio)]);
+
+    };
 
     const resetHandler = () => {
         resetTranscript();
@@ -171,7 +129,7 @@ export default function keren() {
                 <audio
                     src="https://assets.coderrocketfuel.com/pomodoro-times-up.mp3"
                     id="audio"
-                    
+
                 />
                 <p className="text-white">Microphone: {listening ? 'on' : 'off'}</p>
                 <div className="flex flex-col lg:flex-row justify-center mt-5">
@@ -205,8 +163,8 @@ export default function keren() {
                 </div>
                 <div>
                     <audio
-                        id="audio"
-                        // controls
+                        id="MyAudio"
+                        controls
                     />
                 </div>
             </div>

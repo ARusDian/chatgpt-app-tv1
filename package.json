@@ -19,6 +19,7 @@
     "autoprefixer": "10.4.14",
     "chatgpt": "^5.2.5",
     "google-auth-library": "^9.0.0",
+    "lamejs": "^1.2.1",
     "next": "13.4.2",
     "openai": "^4.3.1",
     "openai-api-node": "^1.0.0",
