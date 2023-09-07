@@ -3,7 +3,6 @@ import Link from "next/link";
 import {  useEffect, useState } from "react";
 import OpenAI from 'openai';
 import { CreateChatCompletionRequestMessage } from "openai/resources/chat";
-import { log } from "console";
 
 
 export default function Grammar() {
