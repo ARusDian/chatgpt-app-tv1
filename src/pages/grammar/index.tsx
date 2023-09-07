@@ -86,31 +86,33 @@ export default function Grammar() {
     return (
         <div className="text-black flex justify-center">
             <div className="my-12 w-[1000px]">
-                <form className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-3 flex-1">
-                                <label htmlFor="prompt" className="text-white">Question</label>
+                <form className="flex flex-col gap-6">
+                    {/* <div className="flex flex-col gap-3 flex-1">
+                                <label htmlFor="prompt" className="text-black">Question</label>
                                 <textarea
-                                    className="mt-1 block w-full p-2 resize-y"
+                                    className="mt-1 block w-full p-2 resize-y bg-slate-200"
                                     name="question"
                                     id="question"
                                     value={formState.question}
                                 />
-                    </div>
+                    </div> */}
                     <div className="w-100 flex gap-3">
                         <div className="flex flex-col gap-3 flex-1">
-                            <label htmlFor="prompt" className="text-white">Prompt</label>
+                            <label htmlFor="prompt" className="text-black">Prompt</label>
                             <textarea
-                                className="mt-1 block w-full p-2 resize-y min-h-[300px]"
+                                className="mt-1 block w-full p-2 resize-y min-h-[300px] bg-slate-200"
                                 name="prompt"
                                 id="prompt"
+                                placeholder="Fill this with english text...."
                                 value={formState.prompt}
                                 onChange={(e) => setFormState({ ...formState, prompt: e.target.value })}
                             />
                         </div>
+                        
                         <div className="flex flex-col gap-3 flex-1">
-                            <label htmlFor="prompt" className="text-white">Results</label>
+                            <label htmlFor="prompt" className="text-black">Results</label>
                                 <textarea
-                                    className="mt-1 block w-full p-2 resize-y h-full bg-white"
+                                    className="mt-1 block w-full p-2 resize-y h-full bg-slate-200"
                                     name="answer"
                                     id="answer"
                                     disabled
