@@ -1,44 +1,45 @@
 "use client"
 import Link from "next/link";
 import {  useEffect, useState } from "react";
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import OpenAI from 'openai';
 import { CreateChatCompletionRequestMessage } from "openai/resources/chat";
+import { log } from "console";
 
 
-export default function keren() {
+export default function Grammar() {
 
     const separator = ["\n", ".", "?", "!", ". ", "? ", "! "]
 
     const openai = new OpenAI({
-        apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
+        apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+        dangerouslyAllowBrowser: true
     });
 
     const [formState, setFormState] = useState({
+        question: "",
         prompt: "",
-        answer: "Results....",
-        options: [],
+        answer: "...."
     });
 
-    const [isAsking, setIsAsking] = useState(false);
-
+  
     const chatLogs: CreateChatCompletionRequestMessage[] = [] 
 
-    const {
-        transcript,
-        listening,
-        resetTranscript,
-        browserSupportsSpeechRecognition
-    } = useSpeechRecognition();
+   
 
     useEffect(() => {
-        if (transcript) {
-            setFormState({ ...formState, prompt: transcript });
-        }
-    }, [transcript]);
+    
+    }, []);
+
+
+    const generateQuestion = async () => {
+        const command = "Generate one sample question that are simillar from IELTS english test in speaking section";
+
+        
+    }
 
     const submitHandler = async () => {
-        const command = "Please check the grammar correction and the vocabulary!"
+        const command = "Please check the aspects of fluency and coherence, lexical resource, grammatical range and accuracy, pronountiation simillar like IELTS speaking test then give it score on each of them using percentaged and point out the wrong or error point in the text. It must returns an json contains 3 object which are an object with key scores it contains score each of four aspects in number and an object with key correct_text it contains only the correct version text with no explanation about the aspects";
+
         try {
             chatLogs.push({ role: "user", content: formState.prompt + command});
 
@@ -50,10 +51,10 @@ export default function keren() {
             let tempData = "";
             let tempLine = "";
             const lineText = [];
+            
             for await (const part of stream) {
-                // console.log(part.choices[0]?.delta.content);
                 tempData += part.choices[0]?.delta.content ?? "";
-                tempLine += part.choices[0]?.delta.content ?? "";
+                tempLine += part.choices[0]?.delta.content?.replace(/\n/g, '') ?? "";
                 if (separator.some((val) => tempLine.includes(val))) {
                     const tempSplit = tempLine.split(".");
                     if (tempSplit.length > 1) {
@@ -63,61 +64,60 @@ export default function keren() {
                     tempLine = tempSplit[1] ?? "";
                     tempData += "\n";
                 }
-                console.log(tempLine);
                 setFormState({ ...formState, answer: tempData });
             }
           
-            console.log(lineText);
+            
             chatLogs.push({ role: "assistant", content: tempData });
-
             
         } catch (err) {
             console.log(err);
         }
-
-
     };
-    
 
     const resetHandler = () => {
-        resetTranscript();
         setFormState({
             ...formState,
             prompt: "",
-            answer: "Results...",
+            answer: "...",
         });
     };
 
     return (
-        <div className="text-black flex justify-center bg-red">
-            <div className="my-12 w-3/5">
-                <form className="flex flex-col gap-5">
-                    <div className="flex gap-3">
-                        <label htmlFor="prompt" className="text-white">Prompt</label>
-                        <textarea
-                            className="mt-1 block w-full p-2 resize-y"
-                            name="prompt"
-                            id="prompt"
-                            value={formState.prompt}
-                            onChange={(e) => setFormState({ ...formState, prompt: e.target.value })}
-                        />
+        <div className="text-black flex justify-center">
+            <div className="my-12 w-[1000px]">
+                <form className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 flex-1">
+                                <label htmlFor="prompt" className="text-white">Question</label>
+                                <textarea
+                                    className="mt-1 block w-full p-2 resize-y"
+                                    name="question"
+                                    id="question"
+                                    value={formState.question}
+                                />
                     </div>
-                    {!isAsking ? (
-                        <div className="flex gap-3">
-                            <label htmlFor="prompt" className="text-white ">Results</label>
+                    <div className="w-100 flex gap-3">
+                        <div className="flex flex-col gap-3 flex-1">
+                            <label htmlFor="prompt" className="text-white">Prompt</label>
                             <textarea
-                                className="mt-1 block w-full p-2 resize-y h-full bg-white"
-                                name="answer"
-                                id="answer"
-                                disabled
-                                value={formState.answer}
+                                className="mt-1 block w-full p-2 resize-y min-h-[300px]"
+                                name="prompt"
+                                id="prompt"
+                                value={formState.prompt}
+                                onChange={(e) => setFormState({ ...formState, prompt: e.target.value })}
                             />
                         </div>
-                    ) : (
-                        <div className="text-center text-white text-lg">
-                            Loading....
+                        <div className="flex flex-col gap-3 flex-1">
+                            <label htmlFor="prompt" className="text-white">Results</label>
+                                <textarea
+                                    className="mt-1 block w-full p-2 resize-y h-full bg-white"
+                                    name="answer"
+                                    id="answer"
+                                    disabled
+                                    value={formState.answer}
+                                />
                         </div>
-                    )}
+                    </div>
                 </form>
 
                 <div className="flex justify-center">
@@ -133,7 +133,7 @@ export default function keren() {
                             onClick={submitHandler}
                             className="bg-blue-500 text-white text-center hover:bg-yellow-600 py-3 w-1/2 rounded-lg text-md font-semibold m-5 mt-10"
                         >
-                            GRAMMAR CHECK
+                            CHECK
                         </button>
                     </div>
                 </div>
