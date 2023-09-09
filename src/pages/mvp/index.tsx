@@ -6,6 +6,12 @@ import { CreateChatCompletionRequestMessage } from "openai/resources/chat";
 import ReactLoading from 'react-loading';
 import Rodal from 'rodal';
 
+import { CircularProgressbar } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+
+import CircularProgress from "@/components/CircularProgress";
+
+
 // include styles
 import 'rodal/lib/rodal.css';
 import router from "next/router";
@@ -42,7 +48,13 @@ export default function index() {
         },
         correct_text: string
     } | null>()
-    const [isErrorResult, setIsErrorResult] = useState<boolean>(false);
+    const [errorResult, setErrorResult] = useState<{
+        isErrorResult: boolean,
+        message: string
+    }>({
+        isErrorResult: false,
+        message: ""
+    });
 
 
 
@@ -71,9 +83,10 @@ export default function index() {
             // TODO: Change the command prompt
             const command = "Please check the aspects of fluency and coherence, lexical resource, grammatical range and accuracy, pronountiation simillar like IELTS speaking test then give it score on each of them using percentaged and point out the wrong or error point in the text. It must returns an json contains 3 object which are an object with key scores it contains score each of four aspects in number and an object with key correct_text it contains only the correct version text with no explanation about the aspects like format { scores: { fluency_coherence: number, lexical_resource: number, grammatical_range_accuracy: number, pronunciation: number }, correct_text: string }";
 
-            // const text = "Last weekend, me and my best buddy, we goes on a road trip. We drives for hours, and it was so much fun! We sees all kinds of interesting places, like a big, old castle on top of a hill. It was really cool, and we takes a selfie there. Then, we goes to this little town with a huge ice cream shop. They has like a hundred flavors, and I eats a big, chocolate sundae. It was delicious!\nMy sister, she don't likes to wake up early in the morning. She stays up late watching TV and then sleeps in until noon. She says it's the best way to get enough rest. But, sometimes, she misses important meetings and classes. I tells her to set an alarm, but she never listens. It's like she wants to be late all the time!\nAt my job, we has a big office party every year. Last year, we goes to a fancy restaurant. They serves the most delicious food, like lobster and caviar. I tries them for the first time, and it was interesting. But, the best part was the dancing. We dances all night long, and I have so much fun. I can't wait for this year's party!\nWhen I was a kid, I don't likes vegetables. My mom always tries to make me eats them, but I don't listens. I hides them under the table or gives them to the dog. Now, I realizes that vegetables are good for you, and I eats them every day. I wish I had listened to my mom when I was younger.\nMe and my friends, we goes camping every summer. We brings tents, sleeping bags, and lots of marshmallows for roasting. Last year, we goes to a remote forest. It was so quiet, and we hears the sounds of nature all around us. We tells scary stories by the campfire and laughs until late at night. It's the best way to spend the summer!\n"
+            // DEV-Mode
+            const text = "Last weekend, me and my best buddy, we goes on a road trip. We drives for hours, and it was so much fun! We sees all kinds of interesting places, like a big, old castle on top of a hill. It was really cool, and we takes a selfie there. Then, we goes to this little town with a huge ice cream shop. They has like a hundred flavors, and I eats a big, chocolate sundae. It was delicious!\nMy sister, she don't likes to wake up early in the morning. She stays up late watching TV and then sleeps in until noon. She says it's the best way to get enough rest. But, sometimes, she misses important meetings and classes. I tells her to set an alarm, but she never listens. It's like she wants to be late all the time!\nAt my job, we has a big office party every year. Last year, we goes to a fancy restaurant. They serves the most delicious food, like lobster and caviar. I tries them for the first time, and it was interesting. But, the best part was the dancing. We dances all night long, and I have so much fun. I can't wait for this year's party!\nWhen I was a kid, I don't likes vegetables. My mom always tries to make me eats them, but I don't listens. I hides them under the table or gives them to the dog. Now, I realizes that vegetables are good for you, and I eats them every day. I wish I had listened to my mom when I was younger.\nMe and my friends, we goes camping every summer. We brings tents, sleeping bags, and lots of marshmallows for roasting. Last year, we goes to a remote forest. It was so quiet, and we hears the sounds of nature all around us. We tells scary stories by the campfire and laughs until late at night. It's the best way to spend the summer!\n"
 
-            const text = chatLogs.filter(chat => chat.role === "user").join("\n")
+            // const text = chatLogs.filter(chat => chat.role === "user").join("\n")
 
             while (!isDone && retryCount < 10) {
                 console.log(retryCount)
@@ -91,15 +104,19 @@ export default function index() {
                     setIsResultReady(true)
                 } catch (e) {
                     // TODO: Make Error handler
-                    
+
                     console.log("Error: ", e);
                     // condition for retrying
                     if (retryCount < 10) {
-                        console.log("retrying :", retryCount)
+                        console.log("retrying :", retryCount);
+
+                        setErrorResult({ isErrorResult: false, message: `Trying gathering your results for ${retryCount} times.` });
+
                         continue;
                     } else {
                         // we don't want to retry
                         console.log(`retrying due to rate limit, retry count: ${retryCount}`);
+                        setErrorResult({ isErrorResult: true, message: "We can not retrieve your results, please check your internet connection!" });
                         isDone = true;
                     }
                 }
@@ -160,6 +177,8 @@ export default function index() {
                     <>
                         <section className="w-[100%] max-w-[1300px] h-[90%] mx-auto flex justify-center items-center flex-col relative rounded-3xl shadow-2xl shadow-sky-400/50">
                             <div className="w-[100%] h-[100%] p-5 overflow-y-scroll flex flex-col gap-3" style={{ scrollbarWidth: "none", }} ref={scrollContainerRef}>
+
+
 
                                 {chatLogs.map((chat, index) => (
                                     <div key={index}>
@@ -237,7 +256,7 @@ export default function index() {
                                 className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-20 py-2.5 mr-2 mb-2"
                                 onClick={() => setShowResultModal(true)}
                             >
-                                Hasil
+                                Get the Result
                             </button>
                         </section>
                         <section>
@@ -262,14 +281,14 @@ export default function index() {
 
             <Rodal
                 visible={showResultModal}
-                width={1024 * (1 / 2)}
-                height={1024 * (1 / 2)}
+                width={1424 * (1 / 2)}
+                height={1424 * (1 / 2)}
                 onClose={() => setShowResultModal(false)}
             >
                 <div className="h-full w-full my-auto flex justify-center flex-col">
                     <div className="">
                         {isResultReady ? (
-                            <table className="min-w-full border border-gray-300 divide-y divide-gray-300">
+                            <table className="min-w-full h-full border border-gray-300 divide-y divide-gray-300">
                                 <thead>
                                     <tr>
                                         <th scope="col"
@@ -288,15 +307,24 @@ export default function index() {
                                             Fluency and Coherence
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            {result?.scores.fluency_coherence}
+                                            <div style={{ width: 100, height: 100 }}>
+                                                <CircularProgress
+                                                    value={result?.scores.fluency_coherence ?? 0}
+                                                />
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            Lexical Resource
+                                            Lexical Resource;
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            {result?.scores.lexical_resource}
+
+                                            <div style={{ width: 100, height: 100 }}>
+                                                <CircularProgress
+                                                    value={result?.scores.lexical_resource ?? 0}
+                                                />
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -304,7 +332,12 @@ export default function index() {
                                             Grammatical Range and Accuracy
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            {result?.scores.grammatical_range_accuracy}
+
+                                            <div style={{ width: 100, height: 100 }}>
+                                                <CircularProgress
+                                                    value={result?.scores.grammatical_range_accuracy ?? 0}
+                                                />
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -312,7 +345,12 @@ export default function index() {
                                             Pronunciation
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            {result?.scores.pronunciation}
+
+                                            <div style={{ width: 100, height: 100 }}>
+                                                <CircularProgress
+                                                    value={result?.scores.pronunciation ?? 0}
+                                                />
+                                            </div>
                                         </td>
                                     </tr>
                                     {/* <tr>
@@ -328,9 +366,10 @@ export default function index() {
 
                         ) : (
                             <>
-                                {isErrorResult ? (
+                                {errorResult.isErrorResult ? (
+                                    // TODO: Make It To Can Show Error
                                     <div>
-                                        Error
+                                        ERROR.....
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center my-auto">
@@ -353,7 +392,7 @@ export default function index() {
                                 Tutup
                             </button>
                         </div>
-                   </div>
+                    </div>
                 </div>
             </Rodal>
         </div >
